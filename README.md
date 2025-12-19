@@ -99,7 +99,7 @@ All output figures are saved in the `results/` directory.
 
 
 
-## 📄 Output Data Products
+## Output Data Products
 
 - `gaia_tess_variability_final_catalog.csv`  
   - Gaia identifiers and photometry  
