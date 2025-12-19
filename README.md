@@ -1,165 +1,147 @@
-Gaia–TESS Variability Detection Pipeline
-Project Overview
+#  Gaia–TESS Variability Detection Pipeline
 
-This project investigates stellar photometric variability by combining data from Gaia DR3 and TESS.
-The aim is to quantify low-amplitude stellar variability and assess its impact on exoplanet detection and confirmation, with special attention to separating intrinsic stellar signals from instrumental systematics.
+##  Overview
 
-An end-to-end, reproducible pipeline is implemented that:
+This repository presents an end-to-end pipeline to study **stellar photometric variability** by combining **Gaia DR3** stellar parameters with **TESS** time-series photometry.
 
-selects stars from Gaia DR3,
+The primary goal is to:
+- quantify low-amplitude stellar variability,
+- distinguish intrinsic stellar signals from instrumental systematics,
+- and assess their impact on **exoplanet detection and confirmation**.
 
-retrieves corresponding TESS light curves,
+The project is designed as a **pilot cross-survey variability study** and is suitable for extension to larger stellar samples.
 
-performs time-series variability analysis,
+---
 
-and visualizes variability across the Hertzsprung–Russell (HR) diagram.
+## Scientific Motivation
 
-Scientific Motivation
+Stellar variability is a dominant noise source in transit-based exoplanet surveys.  
+While **Gaia** provides precise stellar characterization, **TESS** offers high-cadence photometric monitoring.
 
-Stellar variability introduces noise that can obscure or mimic exoplanet transit signals.
-By cross-matching Gaia’s precise stellar characterization with TESS’s high-cadence photometry, we can:
+By combining both datasets, this pipeline enables:
+- detection of low-level variability,
+- identification of instrumental artifacts,
+- and variability-informed target vetting for exoplanet studies.
 
-identify low-level stellar variability,
+---
 
-distinguish astrophysical signals from instrumental effects,
+##  Pipeline Summary
 
-and better understand stellar noise sources affecting exoplanet surveys.
+### 1. Gaia DR3 Target Selection
+- Minimal synchronous ADQL queries (robust to archive instability)
+- Selection of stars with reliable Gaia photometry
+- Extracted parameters:
+  - `source_id`
+  - RA, Dec
+  - G-band magnitude
+  - BP–RP color
 
-Pipeline Overview
-1️ Gaia DR3 Star Selection
+---
 
-Minimal synchronous ADQL queries (robust to Gaia Archive instabilities)
+### 2. TESS Light Curve Retrieval
+- TESS light curves are retrieved using sky coordinates (RA/Dec)
+- Implemented using `lightkurve`
+- Handles missing TESS coverage gracefully
 
-Selection of bright stars with reliable photometry
+---
 
-Extracted parameters:
+### 3. Light Curve Processing
+Each TESS light curve is:
+- cleaned of NaN values,
+- flattened to remove long-term trends,
+- normalized to isolate short-timescale variability.
 
-source_id
+---
 
-RA / Dec
+### 4. Variability Quantification
+The following metrics are computed:
+- **RMS variability** (photometric scatter)
+- **Lomb–Scargle periodogram** for dominant periodicities
 
-G-band magnitude
+Periods shorter than ~0.05 days are flagged as **likely instrumental systematics**.
 
-BP–RP color
+---
 
-2️ TESS Light Curve Retrieval
+##  Results & Outputs
 
-TESS light curves are searched and downloaded using RA/Dec
+All output figures are saved in the `results/` directory.
 
-Implemented via lightkurve
 
-Handles missing TESS coverage gracefully
+### 🔹 Raw TESS Light Curve
 
-3️ Light Curve Processing
+**File:** `results/tess_lightcurve_raw.png`
 
-Each light curve is:
+![Raw TESS Light Curve](results/tess_lightcurve_raw.png)
 
-cleaned of NaNs,
 
-flattened to remove long-term trends,
 
-normalized to focus on short-timescale variability.
+### 🔹 Flattened & Normalized TESS Light Curve
 
-4️ Variability Quantification
+**File:** `results/tess_lightcurve_flattened.png`
 
-We compute:
+![Flattened TESS Light Curve](results/tess_lightcurve_flattened.png)
 
-RMS variability (photometric scatter)
 
-Lomb–Scargle periodograms to detect dominant periodicities
 
-Dominant periods shorter than ≈ 0.05 days are flagged as likely instrumental systematics.
+### 🔹 Lomb–Scargle Periodogram
 
-Output Figures & Results
-🔹 TESS Light Curve Example
+**File:** `results/lomb_scargle_periodogram.png`
 
-This figure shows a cleaned and normalized TESS light curve for a Gaia-selected star.
+![Lomb-Scargle Periodogram](results/lomb_scargle_periodogram.png)
 
-Interpretation:
 
-Low-amplitude variability
 
-Presence of short-timescale fluctuations
+### 🔹 Gaia HR Diagram Colored by TESS RMS Variability
 
-Useful for identifying transit-like or systematic features
+**File:** `results/hr_diagram_tess_rms.png`
 
-🔹 Lomb–Scargle Periodogram
+![HR Diagram Colored by TESS RMS](results/hr_diagram_tess_rms.png)
 
-Periodogram used to identify dominant variability timescales.
 
-Interpretation:
 
-Strong power at very short periods (~minutes)
+## 📄 Output Data Products
 
-Indicative of instrumental systematics rather than stellar rotation or pulsation
+- `gaia_tess_variability_final_catalog.csv`  
+  - Gaia identifiers and photometry  
+  - TESS RMS variability  
+  - Dominant period  
+  - Instrumental vs astrophysical variability flag  
+  - Variability classification  
 
-🔹 Gaia HR Diagram Colored by TESS RMS Variability
+---
 
-This is the main science figure of the project.
+##  Technologies Used
 
-Interpretation:
+- Python
+- astroquery
+- lightkurve
+- astropy
+- numpy
+- pandas
+- matplotlib
 
-Demonstrates how photometric variability is distributed across stellar populations
+---
 
-Links stellar properties (color, luminosity) to variability amplitude
 
-Directly relevant for understanding exoplanet detection sensitivity
 
- Output Data Products
+##  Future Work
 
-gaia_tess_variability_final_catalog.csv
-Final merged Gaia–TESS catalog containing:
+- Scale analysis to larger Gaia samples
+- Cross-match with Gaia DR3 variability tables
+- Machine-learning–based variability classification
+- Explainable AI (XAI) for light-curve interpretation
+- Application to exoplanet false-positive mitigation
 
-Gaia identifiers and photometry
+---
 
-TESS RMS variability
-
-Dominant period
-
-Instrumental vs astrophysical flag
-
-Variability class (quiet / mild / strong)
-
-Example Scientific Result
-
-For a representative Gaia DR3 source, the retrieved TESS light curve exhibits low-amplitude variability (RMS ≈ 0.002). Lomb–Scargle analysis reveals a dominant period at ≈ 0.01 days, consistent with instrumental systematics rather than intrinsic stellar variability.
-
-This highlights the importance of systematics-aware variability analysis when interpreting photometric data for exoplanet studies.
-
- Technologies Used
-
-Python
-
-astroquery – Gaia Archive access
-
-lightkurve – TESS data handling
-
-astropy – time-series analysis
-
-numpy, pandas, matplotlib
-
- Future Work
-
-Potential extensions include:
-
-Scaling to larger Gaia samples (50–100+ stars)
-
-Cross-matching with Gaia DR3 variability tables
-
-Machine-learning–based variability classification
-
-Explainable AI (XAI) analysis of stellar light curves
-
-Direct application to exoplanet false-positive mitigation
-
-Author & Research Context
+##  Author & Context
 
 This project was developed as part of an astronomy research portfolio focused on:
-
-time-domain astrophysics,
-
-stellar variability,
-
-and exoplanet detection methodologies.
+- time-domain astrophysics,
+- stellar variability,
+- and exoplanet detection methodologies.
 
 It is intended for research development.
+
+
+
